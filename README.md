@@ -3,7 +3,7 @@
 A sleek and modern weather dashboard built with **HTML, Tailwind CSS, and JavaScript**. This application provides real-time weather data for any city in the world.
 
 
-https://github.com/user-attachments/assets/afd7bd18-56b6-4317-bcd8-a6e4539f8ab8
+https://github.com/user-attachments/assets/87604f94-7126-4f3f-8f39-8c1eaaa90e0a
 
 
 ---
