@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Weather</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .weather-card {
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.125);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl mx-auto">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-600">Weather Dashboard</h1>
+            <p class="text-gray-400 mt-2">Get live weather data for any city.</p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="mb-8 flex flex-col sm:flex-row gap-2 max-w-lg mx-auto">
+            <input type="text" id="cityInput" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Enter city name...">
+            <button id="searchBtn" class="w-full sm:w-auto px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition-colors">Search</button>
+        </div>
+
+        <!-- Geolocation Button -->
+        <div class="text-center mb-8">
+            <button id="geoBtn" class="text-purple-400 hover:text-purple-300 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="inline-block mr-1" viewBox="0 0 16 16">
+                  <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+                </svg>
+                Use my current location
+            </button>
+        </div>
+
+        <!-- Main Content Area -->
+        <div id="weatherContainer" class="hidden">
+            <!-- Current Weather -->
+            <div class="weather-card p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 id="location" class="text-3xl font-bold">--</h2>
+                    <p id="current-time" class="text-gray-400 mb-4"></p>
+                    <div class="flex items-center">
+                        <div id="weather-icon" class="w-24 h-24 mr-4"></div>
+                        <div>
+                            <p id="temperature" class="text-6xl font-bold">--°C</p>
+                            <p id="description" class="text-xl text-gray-300 capitalize">--</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-center">
+                    <div class="bg-gray-800/50 p-4 rounded-lg">
+                        <p class="text-gray-400 text-sm">Feels Like</p>
+                        <p id="feels-like" class="text-2xl font-semibold">--°C</p>
+                    </div>
+                    <div class="bg-gray-800/50 p-4 rounded-lg">
+                        <p class="text-gray-400 text-sm">Humidity</p>
+                        <p id="humidity" class="text-2xl font-semibold">--%</p>
+                    </div>
+                    <div class="bg-gray-800/50 p-4 rounded-lg">
+                        <p class="text-gray-400 text-sm">Wind Speed</p>
+                        <p id="wind-speed" class="text-2xl font-semibold">-- m/s</p>
+                    </div>
+                    <div class="bg-gray-800/50 p-4 rounded-lg">
+                        <p class="text-gray-400 text-sm">Pressure</p>
+                        <p id="pressure" class="text-2xl font-semibold">-- hPa</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Error Message -->
+        <div id="error-message" class="hidden text-center mt-8 bg-red-900/50 p-4 rounded-lg">
+            <p id="error-text"></p>
+        </div>
+    </div>
+
+<script>
+    // --- CONFIGURATION ---
+    // IMPORTANT: Replace with your own OpenWeatherMap API key.
+    // Get a free key from https://openweathermap.org/appid
+    // Note: It may take a few minutes to a couple of hours for a new key to become active.
+    const WEATHER_API_KEY = "dbe4f773e57842fde24fc889a6bdad1d"; 
+
+    // --- DOM ELEMENTS ---
+    const cityInput = document.getElementById('cityInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const geoBtn = document.getElementById('geoBtn');
+    const weatherContainer = document.getElementById('weatherContainer');
+    const errorMessage = document.getElementById('error-message');
+    const errorText = document.getElementById('error-text');
+
+    // --- EVENT LISTENERS ---
+    searchBtn.addEventListener('click', () => {
+        const city = cityInput.value.trim();
+        if (city) {
+            fetchWeatherByCity(city);
+        } else {
+            showError("Please enter a city name.");
+        }
+    });
+
+    cityInput.addEventListener('keyup', (event) => {
+        if (event.key === 'Enter') {
+            searchBtn.click();
+        }
+    });
+
+    geoBtn.addEventListener('click', () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const { latitude, longitude } = position.coords;
+                fetchWeatherByCoords(latitude, longitude);
+            }, () => {
+                showError("Unable to retrieve your location. Please allow location access or search for a city.");
+            });
+        } else {
+            showError("Geolocation is not supported by your browser.");
+        }
+    });
+
+    // --- API CALLS & DATA HANDLING ---
+
+    /**
+     * Checks if the API key is configured.
+     * @returns {boolean} True if the key is configured, false otherwise.
+     */
+    function isApiKeyConfigured() {
+        if (WEATHER_API_KEY === "YOUR_OPENWEATHERMAP_API_KEY" || !WEATHER_API_KEY) {
+            showError("Please configure the OpenWeatherMap API key in the script.");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Fetches weather data from OpenWeatherMap API by city name.
+     * @param {string} city The name of the city.
+     */
+    async function fetchWeatherByCity(city) {
+        if (!isApiKeyConfigured()) return;
+        const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${WEATHER_API_KEY}&units=metric`;
+        await fetchAndProcessWeather(url);
+    }
+
+    /**
+     * Fetches weather data from OpenWeatherMap API by coordinates.
+     * @param {number} lat Latitude.
+     * @param {number} lon Longitude.
+     */
+    async function fetchWeatherByCoords(lat, lon) {
+        if (!isApiKeyConfigured()) return;
+        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`;
+        await fetchAndProcessWeather(url);
+    }
+
+    /**
+     * Generic function to fetch weather data from a URL and update the UI.
+     * @param {string} url The API endpoint URL.
+     */
+    async function fetchAndProcessWeather(url) {
+        hideError();
+        weatherContainer.classList.add('hidden');
+        
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                // Handle specific API key error from OpenWeatherMap
+                if (response.status === 401) {
+                     throw new Error("Invalid API key. Please check the key in the script. Note that new keys may take time to activate.");
+                }
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            updateUI(data);
+        } catch (error) {
+            console.error("Error fetching weather data:", error);
+            showError(`Could not fetch weather data. ${error.message}`);
+        }
+    }
+
+    // --- UI UPDATES ---
+
+    /**
+     * Updates the entire UI with new weather data.
+     * @param {object} data The weather data object from OpenWeatherMap.
+     */
+    function updateUI(data) {
+        const { name, main, weather, wind, sys, dt, timezone } = data;
+
+        document.getElementById('location').textContent = `${name}, ${sys.country}`;
+        document.getElementById('temperature').textContent = `${Math.round(main.temp)}°C`;
+        document.getElementById('description').textContent = weather[0].description;
+        document.getElementById('feels-like').textContent = `${Math.round(main.feels_like)}°C`;
+        document.getElementById('humidity').textContent = `${main.humidity}%`;
+        document.getElementById('wind-speed').textContent = `${wind.speed.toFixed(1)} m/s`;
+        document.getElementById('pressure').textContent = `${main.pressure} hPa`;
+
+        // --- CORRECTED TIME CALCULATION ---
+        // Get the current UTC time from the API's 'dt' field (which is in seconds)
+        const utcMilliseconds = dt * 1000;
+        
+        // Get the city's timezone offset from UTC in milliseconds
+        const timezoneOffsetMilliseconds = timezone * 1000;
+
+        // Calculate the city's actual local time by creating a new Date object
+        // that represents the correct time in that city's timezone.
+        const cityDate = new Date(utcMilliseconds + timezoneOffsetMilliseconds);
+
+        // Format the time using UTC methods to prevent the browser from applying its own timezone.
+        // This correctly displays the city's local time.
+        const formattedTime = cityDate.toLocaleTimeString('en-US', {
+            weekday: 'long',
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: 'UTC' // IMPORTANT: Treat the date as UTC to avoid local conversion
+        });
+        
+        document.getElementById('current-time').textContent = formattedTime;
+
+        // Update weather icon
+        const weatherIcon = document.getElementById('weather-icon');
+        weatherIcon.innerHTML = getWeatherIcon(weather[0].main);
+
+        weatherContainer.classList.remove('hidden');
+    }
+
+    /**
+     * Returns an SVG icon based on the weather condition.
+     * @param {string} condition The main weather condition (e.g., 'Clear', 'Clouds').
+     * @returns {string} An HTML string for the SVG icon.
+     */
+    function getWeatherIcon(condition) {
+        switch (condition) {
+            case 'Clear':
+                return `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="#FFC107" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+            case 'Clouds':
+                return `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="#9E9E9E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>`;
+            case 'Rain':
+            case 'Drizzle':
+                return `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="#42A5F5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16.5c0-1.93-1.57-3.5-3.5-3.5-1.04 0-1.96.45-2.6.1.18-.32.28-.68.28-1.05 0-1.1-.9-2-2-2s-2 .9-2 2c0 .37.1.73.28 1.05-.64.35-1.56.1-2.6.1C6.57 13 5 14.57 5 16.5c0 1.93 1.57 3.5 3.5 3.5h9c1.93 0 3.5-1.57 3.5-3.5zM8 13v1m4-1v1m4-1v1"/></svg>`;
+            case 'Thunderstorm':
+                return `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="#FFEB3B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16.5c0-1.93-1.57-3.5-3.5-3.5-1.04 0-1.96.45-2.6.1.18-.32.28-.68.28-1.05 0-1.1-.9-2-2-2s-2 .9-2 2c0 .37.1.73.28 1.05-.64.35-1.56.1-2.6.1C6.57 13 5 14.57 5 16.5c0 1.93 1.57 3.5 3.5 3.5h9c1.93 0 3.5-1.57 3.5-3.5z"/><polyline points="13 11 10 16 13 16 11 21"/></svg>`;
+            case 'Snow':
+                return `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 17.58A5 5 0 0 0 15.07 13H9.58A5 5 0 0 0 5 17.58"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="12" y1="18" x2="12.01" y2="18"/><line x1="16" y1="16" x2="16.01" y2="16"/><line x1="10" y1="14" x2="10.01" y2="14"/><line x1="14" y1="14" x2="14.01" y2="14"/><line x1="12" y1="12" x2="12.01" y2="12"/></svg>`;
+            default: // Mist, Smoke, Haze, Dust, Fog, Sand, Dust, Ash, Squall, Tornado
+                return `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="#B0BEC5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`;
+        }
+    }
+
+    /**
+     * Displays an error message to the user.
+     * @param {string} message The error message to display.
+     */
+    function showError(message) {
+        errorText.textContent = message;
+        errorMessage.classList.remove('hidden');
+    }
+
+    /**
+     * Hides the error message.
+     */
+    function hideError() {
+        errorMessage.classList.add('hidden');
+    }
+
+</script>
+
+</body>
+</html>
