@@ -6,26 +6,23 @@
     <title>Weather Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Link to your external CSS file -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+<body class="text-gray-800 flex items-center justify-center min-h-screen p-4">
 
     <div class="w-full max-w-4xl mx-auto">
         <div class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-600">Weather Dashboard</h1>
-            <p class="text-gray-400 mt-2">Get live weather data for any city.</p>
+            <h1 class="text-4xl md:text-5xl font-bold text-white drop-shadow-md">Weather Dashboard</h1>
+            <p class="text-white/80 mt-2">Get live weather data for any city.</p>
         </div>
 
-        <!-- Search Bar -->
         <div class="mb-8 flex flex-col sm:flex-row gap-2 max-w-lg mx-auto">
-            <input type="text" id="cityInput" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Enter city name...">
-            <button id="searchBtn" class="w-full sm:w-auto px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition-colors">Search</button>
+            <input type="text" id="cityInput" class="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-gray-500" placeholder="Enter city name...">
+            <button id="searchBtn" class="w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors shadow-md">Search</button>
         </div>
 
-        <!-- Geolocation Button -->
         <div class="text-center mb-8">
-            <button id="geoBtn" class="text-purple-400 hover:text-purple-300 transition-colors">
+            <button id="geoBtn" class="text-white/90 hover:text-white transition-colors font-medium">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="inline-block mr-1" viewBox="0 0 16 16">
                   <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
                 </svg>
@@ -33,49 +30,45 @@
             </button>
         </div>
 
-        <!-- Main Content Area -->
         <div id="weatherContainer" class="hidden">
-            <!-- Current Weather -->
-            <div class="weather-card p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div class="weather-card p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center text-white">
                 <div>
                     <h2 id="location" class="text-3xl font-bold">--</h2>
-                    <p id="current-time" class="text-gray-400 mb-4"></p>
+                    <p id="current-time" class="text-white/80 mb-4"></p>
                     <div class="flex items-center">
                         <div id="weather-icon" class="w-24 h-24 mr-4"></div>
                         <div>
                             <p id="temperature" class="text-6xl font-bold">--°C</p>
-                            <p id="description" class="text-xl text-gray-300 capitalize">--</p>
+                            <p id="description" class="text-xl text-white/90 capitalize">--</p>
                         </div>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4 text-center">
-                    <div class="bg-gray-800/50 p-4 rounded-lg">
-                        <p class="text-gray-400 text-sm">Feels Like</p>
+                    <div class="bg-black/10 p-4 rounded-lg">
+                        <p class="text-white/80 text-sm">Feels Like</p>
                         <p id="feels-like" class="text-2xl font-semibold">--°C</p>
                     </div>
-                    <div class="bg-gray-800/50 p-4 rounded-lg">
-                        <p class="text-gray-400 text-sm">Humidity</p>
+                    <div class="bg-black/10 p-4 rounded-lg">
+                        <p class="text-white/80 text-sm">Humidity</p>
                         <p id="humidity" class="text-2xl font-semibold">--%</p>
                     </div>
-                    <div class="bg-gray-800/50 p-4 rounded-lg">
-                        <p class="text-gray-400 text-sm">Wind Speed</p>
+                    <div class="bg-black/10 p-4 rounded-lg">
+                        <p class="text-white/80 text-sm">Wind Speed</p>
                         <p id="wind-speed" class="text-2xl font-semibold">-- m/s</p>
                     </div>
-                    <div class="bg-gray-800/50 p-4 rounded-lg">
-                        <p class="text-gray-400 text-sm">Pressure</p>
+                    <div class="bg-black/10 p-4 rounded-lg">
+                        <p class="text-white/80 text-sm">Pressure</p>
                         <p id="pressure" class="text-2xl font-semibold">-- hPa</p>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Error Message -->
-        <div id="error-message" class="hidden text-center mt-8 bg-red-900/50 p-4 rounded-lg">
+        <div id="error-message" class="hidden text-center mt-8 bg-red-800/80 text-white p-4 rounded-lg">
             <p id="error-text"></p>
         </div>
     </div>
 
-    <!-- Link to your external JavaScript file -->
     <script src="script.js"></script>
 </body>
 </html>
