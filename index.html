@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather Dashboard</title>
+    
+    <!-- THIS SCRIPT TAG WAS MISSING AND IS REQUIRED FOR STYLING -->
     <script src="https://cdn.tailwindcss.com"></script> 
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Link to your external CSS file -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="text-gray-800 flex items-center justify-center min-h-screen p-4">
@@ -16,11 +20,13 @@
             <p class="text-white/80 mt-2">Get live weather data for any city.</p>
         </div>
 
+        <!-- Search Bar -->
         <div class="mb-8 flex flex-col sm:flex-row gap-2 max-w-lg mx-auto">
             <input type="text" id="cityInput" class="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-gray-500" placeholder="Enter city name...">
             <button id="searchBtn" class="w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors shadow-md">Search</button>
         </div>
 
+        <!-- Geolocation Button -->
         <div class="text-center mb-8">
             <button id="geoBtn" class="text-white/90 hover:text-white transition-colors font-medium">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="inline-block mr-1" viewBox="0 0 16 16">
@@ -30,7 +36,9 @@
             </button>
         </div>
 
+        <!-- Main Content Area -->
         <div id="weatherContainer" class="hidden">
+            <!-- Current Weather -->
             <div class="weather-card p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center text-white">
                 <div>
                     <h2 id="location" class="text-3xl font-bold">--</h2>
@@ -64,11 +72,13 @@
             </div>
         </div>
         
+        <!-- Error Message -->
         <div id="error-message" class="hidden text-center mt-8 bg-red-800/80 text-white p-4 rounded-lg">
             <p id="error-text"></p>
         </div>
     </div>
 
+    <!-- Link to your external JavaScript file -->
     <script src="script.js"></script>
 </body>
 </html>
